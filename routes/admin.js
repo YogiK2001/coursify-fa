@@ -1,12 +1,15 @@
+const express = require('express');
+const app = express();
 const { Router, application } = require('express');
 const adminRouter = Router();
 const { User, Course, Admin, Purchase } = require('../database/db');
 const { z } = require("zod");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 require('dotenv').config();
 
-app.use(expres.json());
+app.use(express.json());
 
 async function generateHash(password) {
     let salt = await bcrypt.genSalt(10);
@@ -18,7 +21,7 @@ adminRouter.post('/signup', async function (req, res) {
     try {
         const requiredResponse = z.object({
             email: z.string().min(3).max(100).email(),
-            password: z.string().min(5).max(50),
+            password: z.string(),
             firstName: z.string(),
             lastName: z.string(),
         });
@@ -43,7 +46,7 @@ adminRouter.post('/signup', async function (req, res) {
 
             const token = jwt.sign({
                 id: newAdmin._id.toString()
-            }, process.env.JWT_SECRET)
+            }, process.env.JWT_ADMIN_SECRET)
 
             res.status(200).json({
                 message: "Congratulations! You have signed up",
@@ -58,16 +61,58 @@ adminRouter.post('/signup', async function (req, res) {
         res.status(500).json({
             message: "Failed to Signup! "
         });
+        console.error(err);
     }
 })
 
-adminRouter.post('/signin', function (req, res) {
+adminRouter.post('/signin', async function (req, res) {
+    try {
+        const requiredResponse = z.object({
+            email: z.string().min(3).max(100).email(),
+            password: z.string().min(5).max(50),
+        });
+
+        const parsedData = requiredResponse.safeParse(req.body);
+        if (parsedData.success) {
+            const { email, password } = parsedData.data;
+
+            const user = await Admin.findOne({
+                email: email,
+            });
 
 
-    res.json({
-        message: "You purchaesd courses"
-    })
+            const passwordMatch = await bcrypt.compare(password, user.password);
+
+            if (user && passwordMatch) {
+                const token = jwt.sign({
+                    id: user._id.toString()
+                }, process.env.JWT_ADMIN_SECRET);
+
+                res.status(200).json({
+                    message: "Logged in successfully",
+                    token: token
+                })
+            } else {
+                res.status(403).json({
+                    message: "Incorrect creds"
+                })
+            }
+        } else {
+            res.status(403).json({
+                message: "Invalid credentials"
+            });
+        }
+    } catch (err) {
+        res.status(500).json({
+            message: "Failed to Signin"
+        });
+        console.error(err);
+    }
 })
+
+
+
+
 adminRouter.post('/course', function (req, res) {
     res.json({
         message: "You purchaesd courses"
