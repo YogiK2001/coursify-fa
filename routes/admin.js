@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { authAdmin } = require("../middleware/admin");
 const course = require('./course');
-const course = require('./course');
+
 
 
 app.use(express.json());
