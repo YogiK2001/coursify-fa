@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const { Router, application } = require('express');
@@ -6,8 +7,9 @@ const { User, Course, Admin, Purchase } = require('../database/db');
 const { z } = require("zod");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { authAdmin } = require("../middleware/admin");
+const course = require('./course');
 
-require('dotenv').config();
 
 app.use(express.json());
 
@@ -76,16 +78,16 @@ adminRouter.post('/signin', async function (req, res) {
         if (parsedData.success) {
             const { email, password } = parsedData.data;
 
-            const user = await Admin.findOne({
+            const admin = await Admin.findOne({
                 email: email,
             });
 
 
-            const passwordMatch = await bcrypt.compare(password, user.password);
+            const passwordMatch = await bcrypt.compare(password, admin.password);
 
-            if (user && passwordMatch) {
+            if (admin && passwordMatch) {
                 const token = jwt.sign({
-                    id: user._id.toString()
+                    id: admin._id.toString()
                 }, process.env.JWT_ADMIN_SECRET);
 
                 res.status(200).json({
@@ -113,21 +115,27 @@ adminRouter.post('/signin', async function (req, res) {
 
 
 
-adminRouter.post('/course', function (req, res) {
+adminRouter.post('/course', authAdmin, async function (req, res) {
+    // const token = req.headers.authorization;
+    const adminId = req.userId;
+    const { title, description, imageUrl, price } = req.body;
+
+    // Improvement: Instead of the URL one should diretly upload image to the platform
+    const course = await Course.create({
+        title, description, imageUrl, price, creatorId: adminId
+    })
+
     res.json({
-        message: "You purchaesd courses"
+        message: "Course Created",
+        courseId: course._id,
     })
 })
 
-// Middlware call
 
-adminRouter.post('/course', function (req, res) {
-    res.json({
-        message: "You bought this course"
-    })
-})
 
-adminRouter.put('/', function (req, res) {
+adminRouter.put('/course', authAdmin, function (req, res) {
+
+
     res.json({
         message: "You bought this course"
     })

@@ -1,6 +1,7 @@
+require('dotenv').config()
 const mongoose = require('mongoose');
-console.log("======Connected to MongoDB");
-mongoose.connect('mongodb+srv://learning12102001:8BvLtVD5joqNfQI6@cluster0.hsmhh.mongodb.net/coursify-app');
+console.log("======Connected to MongoDB======");
+mongoose.connect(process.env.MONGODB_URI);
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId; // Use Types.ObjectId

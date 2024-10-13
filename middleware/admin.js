@@ -17,4 +17,6 @@ function authAdmin(req, res, next) {
     }
 }
 
-module.exports = authAdmin;
+module.exports = {
+    authAdmin: authAdmin,
+}
