@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { authAdmin } = require("../middleware/admin");
 const course = require('./course');
+const course = require('./course');
 
 
 app.use(express.json());
@@ -116,7 +117,6 @@ adminRouter.post('/signin', async function (req, res) {
 
 
 adminRouter.post('/course', authAdmin, async function (req, res) {
-    // const token = req.headers.authorization;
     const adminId = req.userId;
     const { title, description, imageUrl, price } = req.body;
 
@@ -133,17 +133,33 @@ adminRouter.post('/course', authAdmin, async function (req, res) {
 
 
 
-adminRouter.put('/course', authAdmin, function (req, res) {
+adminRouter.put('/course', authAdmin, async function (req, res) {
+    const adminId = req.userId;
+    const { title, description, imageUrl, price } = req.body;
 
+    // Improvement: Instead of the URL one should diretly upload image to the platform
+    const course = await Course.updateOne({
+        _id: courseId,
+        creatorId: adminId // Update only this Creator's Course
+    }, {
+        title, description, imageUrl, price, creatorId: adminId
+    })
 
     res.json({
-        message: "You bought this course"
+        message: "Course Updated",
+        courseId: course._id,
     })
 })
 
-adminRouter.get('/bulk', function (req, res) {
+adminRouter.get('/course/bulk', async function (req, res) {
+    const adminId = req.userId;
+
+    const courses = await Course.findOne({
+        creatorId: adminId
+    })
     res.json({
-        message: "You bought this course"
+        message: "You bought this course",
+        courses
     })
 })
 
