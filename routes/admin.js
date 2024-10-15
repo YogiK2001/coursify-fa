@@ -151,6 +151,27 @@ adminRouter.put('/course', authAdmin, async function (req, res) {
     })
 })
 
+adminRouter.put('/course/:courseId', authAdmin, async function (req, res,) {
+    const courseId = req.params;
+    const adminId = req.userId;
+
+    if (courseId === undefined) {
+        res.status(403).json({ message: "No Course Id Recieved" });
+    }
+
+    const course = await Course.updateOne({
+        _id: courseId,
+        creatorId: adminId,
+    }, {
+        title, description, imageUrl, price, creatorId: adminId
+    })
+
+    res.json({
+        message: "Course Updated",
+        courseId: course._id,
+    })
+});
+
 adminRouter.get('/course/bulk', async function (req, res) {
     const adminId = req.userId;
 
