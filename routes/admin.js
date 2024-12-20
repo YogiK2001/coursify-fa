@@ -133,43 +133,49 @@ adminRouter.post('/course', authAdmin, async function (req, res) {
 
 
 
-adminRouter.put('/course', authAdmin, async function (req, res) {
-    const adminId = req.userId;
-    const { title, description, imageUrl, price } = req.body;
+// adminRouter.put('/course', authAdmin, async function (req, res) {
+//     const adminId = req.userId;
+//     const { title, description, imageUrl, price } = req.body;
 
-    // Improvement: Instead of the URL one should diretly upload image to the platform
-    const course = await Course.updateOne({
-        _id: courseId,
-        creatorId: adminId // Update only this Creator's Course
-    }, {
-        title, description, imageUrl, price, creatorId: adminId
-    })
+//     // Improvement: Instead of the URL one should diretly upload image to the platform
+//     const course = await Course.updateOne({
+//         _id: courseId,
+//         creatorId: adminId // Update only this Creator's Course
+//     }, {
+//         title, description, imageUrl, price, creatorId: adminId
+//     })
 
-    res.json({
-        message: "Course Updated",
-        courseId: course._id,
-    })
-})
+//     res.json({
+//         message: "Course Updated",
+//         courseId: course._id,
+//     })
+// })
 
 adminRouter.put('/course/:courseId', authAdmin, async function (req, res,) {
-    const courseId = req.params;
-    const adminId = req.userId;
+    try {
+        const { courseId } = req.params;
+        const adminId = req.userId;
 
-    if (courseId === undefined) {
-        res.status(403).json({ message: "No Course Id Recieved" });
+        const { title, description, imageUrl, price } = req.body;
+
+        if (courseId === undefined) {
+            res.status(403).json({ message: "No Course Id Recieved" });
+        }
+
+        const course = await Course.updateOne({
+            _id: courseId,
+            creatorId: adminId,
+        }, {
+            title, description, imageUrl, price, creatorId: adminId
+        })
+
+        res.json({
+            message: "Course Updated",
+            courseId: course._id,
+        })
+    } catch (e) {
+        console.log(e);
     }
-
-    const course = await Course.updateOne({
-        _id: courseId,
-        creatorId: adminId,
-    }, {
-        title, description, imageUrl, price, creatorId: adminId
-    })
-
-    res.json({
-        message: "Course Updated",
-        courseId: course._id,
-    })
 });
 
 adminRouter.get('/course/bulk', async function (req, res) {

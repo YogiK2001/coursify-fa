@@ -53,7 +53,8 @@ userRouter.post('/signup', async function (req, res) {
 
             res.status(200).json({
                 message: "Congratulations! You have signed up",
-                token: token
+                token: token,
+                userId: user._id.toString()
             })
         } else {
             res.status(403).json({
@@ -93,7 +94,8 @@ userRouter.post('/signin', async function (req, res) {
 
                 res.status(200).json({
                     message: "User Logged in successfully",
-                    token: token
+                    token: token,
+                    userId: user._id.toString()
                 })
             } else {
                 res.status(403).json({
@@ -127,7 +129,7 @@ userRouter.get('/purchases', authUser, async function (req, res) {
     for (let i = 0; i < purchases.length; i++) {
         purchasedCourseIds.push(purchases[i].courseId)
     }
-    const coursesData = await courseModel.find({
+    const coursesData = await Course.find({
         _id: { $in: purchasedCourseIds }
     })
 

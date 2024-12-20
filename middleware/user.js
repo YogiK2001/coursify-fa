@@ -4,16 +4,30 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 function authUser(req, res, next) {
-    const token = req.headers.token;
-    const decoded = jwt.verify(token, process.env.JWT_USER_SECRET);
+    try {
+        const token = req.headers.token;
 
-    if (decoded) {
-        req.userId = decoded.id;
-        next();
-    } else {
-        res.status(403).json({
-            message: "You are not signed up sir!!!"
-        })
+        if (!token) {
+            return res.status(401).json({
+                message: "No token provided"
+            });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_USER_SECRET);
+
+        if (decoded) {
+            req.userId = decoded.id;
+            next();
+        } else {
+            res.status(403).json({
+                message: "Invalid token"
+            });
+        }
+    } catch (error) {
+        console.error("Auth error:", error);
+        res.status(401).json({
+            message: "Authentication failed"
+        });
     }
 }
 

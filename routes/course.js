@@ -9,12 +9,13 @@ const { authUser } = require("../middleware/user");
 const course = require('./course');
 
 
+
 app.use(express.json());
 
 
 
 courseRouter.post('/purchases', authUser, async function (req, res) {
-    const userId = req.body;
+    const userId = req.userId;
     const courseId = req.body.courseId;
 
     await Purchase.create({
@@ -29,12 +30,16 @@ courseRouter.post('/purchases', authUser, async function (req, res) {
 })
 
 
-courseRouter.post('/preview', async function (req, res) {
-    const courses = Course.find({});
+courseRouter.get('/preview', async function (req, res) {
+    try {
+        const courses = await Course.find({}).lean();
 
-    res.json({
-        courses
-    })
+        res.json({
+            courses
+        })
+    } catch (err) {
+        console.log(err);
+    }
 })
 
 module.exports = {
